@@ -1,5 +1,5 @@
-# Approche Regression on First Principal Component
----
+# Regression on First Principal Component – Approach SEM
+
 ## Objectif
 
 Cette fonction permet de calculer l'approche RFPC dans le cadre des modèles à équations structurelles.
