@@ -14,3 +14,7 @@ Voir le notebook : _RFPC_approche.ipynb_ pour avoir un exemple d'utilisation de 
 - statsmodel
 - numpy 
 - pandas
+
+## Référence
+
+Derquenne, Christian; Hallais, Clémence. Une méthode alternative à l'approche PLS : comparaison et application aux modèles conceptuels marketing. Revue de Statistique Appliquée, Tome 52 (2004) no. 3, pp. 37-72.
