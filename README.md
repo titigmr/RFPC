@@ -1,4 +1,4 @@
-# Regression on First Principal Component – Approach SEM
+# Regression on First Principal Component
 
 ## Objectif
 
