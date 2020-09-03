@@ -23,7 +23,7 @@ def verification_bloc(blocs, vl, data):
 
 
 class RFPC:
-    def __init__(self, data, blocs, vl, path):
+    def __init__(self, data, blocs, vl, path, verbose=True):
         """
         Calcul l'approche RFPC pour les modèles à équation structurelles.
 
@@ -39,7 +39,7 @@ class RFPC:
         all_reg = self.__reg__(path)
 
         r2_all, self.list_resul_inner = self.__calcul_r2_inner__(all_reg, vl_data)
-        self.final_inner, self.final_outer = self.__RFPC_estimate__(blocs, data, r2_all, vl)
+        self.final_inner, self.final_outer = self.__RFPC_estimate__(blocs, data, r2_all, vl, verbose)
 
         R2_mean = self.final_inner.R2[self.final_inner.R2 != 0].mean()
         AVE_mean = self.final_inner.AVE.mean()
@@ -60,7 +60,6 @@ class RFPC:
         r2 : par défaut 0. Si le bloc est endogène, renseigner le r2
             de la variable latente après estimation du modèle interne.
         """
-
         block = data.iloc[:, begin:end]
         f_pca = PCA(col_labels=list(data.iloc[:, begin:end].columns),
                     n_components=1)
@@ -96,11 +95,8 @@ class RFPC:
         Calcul des variables latentes (1ère composante).
 
         """
-        list_composante = []
-
-        for enum, bloc in enumerate(blocs):
-            composante = self.__inner_outer__(data, bloc[0], bloc[1], comp=True, name=str(vl[enum]))
-            list_composante.append(composante)
+        list_composante = [self.__inner_outer__(data, bloc[0], bloc[1], 
+        	comp=True, name=str(vl[enum])) for enum, bloc in enumerate(blocs)]
 
         variable_latente = pd.concat(list_composante, axis=1)
 
@@ -148,26 +144,22 @@ class RFPC:
 
             r2_all.append(r2)
 
-        list_resul_inner = []
-
-        for i in regression:
-            result_inner = pd.DataFrame(i)
-            list_resul_inner.append(result_inner)
+        list_resul_inner = [pd.DataFrame(i) for i in regression]
 
         return r2_all, list_resul_inner
 
-    def __RFPC_estimate__(self, blocs, data, r2_all, vl):
+    def __RFPC_estimate__(self, blocs, data, r2_all, vl, verbose):
         """
         Estimation des modèles de mesure et de structure.
         Les retours donnent les indicateurs de performances et les coefficients.
         """
-
         outer_total = []
         inner_total = []
 
         for enum, bloc in enumerate(blocs):
             out_outer, out_inner = self.__inner_outer__(data, bloc[0], bloc[1],
-                                                        comp=False, name=str(vl[enum]), r2=r2_all[enum], printing=True)
+                                                        comp=False, name=str(vl[enum]), 
+                                                        r2=r2_all[enum], printing=verbose)
 
             outer_total.append(out_outer)
             inner_total.append(out_inner)
