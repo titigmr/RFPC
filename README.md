@@ -6,7 +6,7 @@ Cette fonction permet de calculer l'approche RFPC dans le cadre des modèles à 
 
 ## Utilisation
 
-Voir le notebook : _RFPC_approche.ipynb_ pour avoir un exemple d'utilisation de la fonction.
+Voir le notebook : _RFPC_approche.ipynb_ pour avoir un exemple d'utilisation du module.
 
 ## Requirement 
 
