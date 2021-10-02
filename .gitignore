@@ -1,0 +1,25 @@
+# OS
+.DS_STORE
+
+# import
+__pycache__
+
+# test
+.pytest*
+
+# egg metadata
+.eggs
+*.egg-info
+.pypirc
+
+# Editor
+.project
+.pydevproject
+.settings
+.idea
+.vagrant
+.noseids
+.ipynb_checkpoints
+.tags
+.cache/
+.vscode/

@@ -10,19 +10,18 @@ def verification_bloc(blocs, vl, data):
 
     Paramètres :
     -----------
-
     blocs : la liste des indices des variables manifestes pour chacun des blocs
     vl : liste des noms des variables manifestes
     data : jeu de données
 
     """
     for enum, bloc in enumerate(blocs):
-        bloc_var = data.iloc[:, bloc[0]:bloc[1]]
+        bloc_var = data.iloc[:, bloc[0] : bloc[1]]
         vl_ = vl[enum]
         print("Bloc :", vl_, "\nVariables manifestes :", list(bloc_var.columns), "\n")
 
 
-class RFPC:
+class RegressionFPC:
     def __init__(self, data, blocs, vl, path, verbose=True):
         """
         Calcul l'approche RFPC pour les modèles à équation structurelles.
@@ -35,17 +34,21 @@ class RFPC:
         path : matrice des liens, dans le même ordre que vl.
         """
 
-        vl_data = self.__variable_latente__(data, blocs, vl)
-        all_reg = self.__reg__(path)
+        vl_data = self.__variable_latente(data, blocs, vl)
+        all_reg = self.__reg(path)
 
-        r2_all, self.list_resul_inner = self.__calcul_r2_inner__(all_reg, vl_data)
-        self.final_inner, self.final_outer = self.__RFPC_estimate__(blocs, data, r2_all, vl, verbose)
+        r2_all, self.list_resul_inner = self.__calcul_r2_inner(all_reg, vl_data)
+        self.final_inner, self.final_outer = self.__RFPC_estimate(
+            blocs, data, r2_all, vl, verbose
+        )
 
         R2_mean = self.final_inner.R2[self.final_inner.R2 != 0].mean()
         AVE_mean = self.final_inner.AVE.mean()
         self.GOF = np.sqrt(R2_mean * AVE_mean)
 
-    def __inner_outer__(self, data, begin, end, comp=False, name='Latent', r2=0, printing=False):
+    def __inner_outer(
+        self, data, begin, end, comp=False, name="Latent", r2=0, printing=False
+    ):
         """
         Estimation du modèle interne dans le cas de l'approche RFPC.
 
@@ -61,8 +64,7 @@ class RFPC:
             de la variable latente après estimation du modèle interne.
         """
         block = data.iloc[:, begin:end]
-        f_pca = PCA(col_labels=list(data.iloc[:, begin:end].columns),
-                    n_components=1)
+        f_pca = PCA(col_labels=list(data.iloc[:, begin:end].columns), n_components=1)
         rfpc = f_pca.fit(np.array(data.iloc[:, begin:end]))
         if printing:
             print(rfpc.col_labels)
@@ -71,16 +73,20 @@ class RFPC:
         if comp:
             return comp_rfpc
 
-        loading = pd.concat([comp_rfpc, data.iloc[:, begin:end]],
-                            axis=1).corr().iloc[1:, 0]
+        loading = (
+            pd.concat([comp_rfpc, data.iloc[:, begin:end]], axis=1).corr().iloc[1:, 0]
+        )
         weight = loading / f_pca.eig_[0]
         comm = loading ** 2
         redond = comm * r2
 
         out = np.array(pd.concat([weight, loading, comm, redond], axis=1))
-        out_outer = pd.DataFrame(out, columns=["weight", "loading", "communality", "redundancy"],
-                                 index=f_pca.col_labels)
-        out_outer.insert(0, 'Bloc', name)
+        out_outer = pd.DataFrame(
+            out,
+            columns=["weight", "loading", "communality", "redundancy"],
+            index=f_pca.col_labels,
+        )
+        out_outer.insert(0, "Bloc", name)
 
         AVE = out_outer.communality.mean()
         Mean_redundancy = AVE * r2
@@ -90,19 +96,21 @@ class RFPC:
 
         return out_outer, out_inner
 
-    def __variable_latente__(self, data, blocs, vl):
+    def __variable_latente(self, data, blocs, vl):
         """
         Calcul des variables latentes (1ère composante).
 
         """
-        list_composante = [self.__inner_outer__(data, bloc[0], bloc[1], 
-        	comp=True, name=str(vl[enum])) for enum, bloc in enumerate(blocs)]
+        list_composante = [
+            self.__inner_outer(data, bloc[0], bloc[1], comp=True, name=str(vl[enum]))
+            for enum, bloc in enumerate(blocs)
+        ]
 
         variable_latente = pd.concat(list_composante, axis=1)
 
         return variable_latente
 
-    def __reg__(self, path):
+    def __reg(self, path):
         """
         Liste sous forme de dictionnaire les régressions du modèle interne.
 
@@ -118,12 +126,12 @@ class RFPC:
                     x.append(name)
             y = index
 
-            reg = {'y': y, 'x': x}
+            reg = {"y": y, "x": x}
             all_reg.append(reg)
 
         return all_reg
 
-    def __calcul_r2_inner__(self, all_reg, vl_data):
+    def __calcul_r2_inner(self, all_reg, vl_data):
         """
         Calcule les R2 du modèle interne.
         """
@@ -148,7 +156,7 @@ class RFPC:
 
         return r2_all, list_resul_inner
 
-    def __RFPC_estimate__(self, blocs, data, r2_all, vl, verbose):
+    def __RFPC_estimate(self, blocs, data, r2_all, vl, verbose):
         """
         Estimation des modèles de mesure et de structure.
         Les retours donnent les indicateurs de performances et les coefficients.
@@ -157,9 +165,15 @@ class RFPC:
         inner_total = []
 
         for enum, bloc in enumerate(blocs):
-            out_outer, out_inner = self.__inner_outer__(data, bloc[0], bloc[1],
-                                                        comp=False, name=str(vl[enum]), 
-                                                        r2=r2_all[enum], printing=verbose)
+            out_outer, out_inner = self.__inner_outer(
+                data,
+                bloc[0],
+                bloc[1],
+                comp=False,
+                name=str(vl[enum]),
+                r2=r2_all[enum],
+                printing=verbose,
+            )
 
             outer_total.append(out_outer)
             inner_total.append(out_inner)
